@@ -5,6 +5,9 @@
 #include <stdlib.h>
 #include <netinet/in.h>
 #include <string.h>
+#include <pwd.h>
+#include <sys/wait.h>
+#include <sys/types.h>
 #define PORT 8080
 
 int main(int argc, char const *argv[])
@@ -15,6 +18,9 @@ int main(int argc, char const *argv[])
     int addrlen = sizeof(address);
     char buffer[1024] = {0};
     char *hello = "Hello from server";
+    char *user = "nobody";
+    struct passwd *password;
+    pid_t processId;
 
     // Creating socket file descriptor
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
@@ -61,7 +67,14 @@ int main(int argc, char const *argv[])
     }
     else if (childProcess == 0)
     {
-        if (setuid(65534) < 0)
+        password = getpwnam(user);
+        if (password == NULL)
+        {
+            perror("User nobody: not found");
+            exit(EXIT_FAILURE);
+        }
+        processId = password->pw_uid;
+        if (setuid(processId) < 0)
         {
             perror("Previlege Separation Failed");
             exit(EXIT_FAILURE);
@@ -76,17 +89,7 @@ int main(int argc, char const *argv[])
         send(new_socket, hello, strlen(hello), 0);
         printf("Hello message sent\n");
     }
-    else
-    {
-        int status = 0;
-        while ((wait(&status)) > 0)
-            ;
-    }
-
-    // valread = read(new_socket, buffer, 1024);
-    // printf("Read %d bytes: %s\n", valread, buffer);
-    // send(new_socket, hello, strlen(hello), 0);
-    // printf("Hello message sent\n");
+    wait(NULL);
 
     return 0;
 }
