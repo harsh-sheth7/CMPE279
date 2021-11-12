@@ -59,7 +59,7 @@ int main(int argc, char const *argv[])
         exit(EXIT_FAILURE);
     }
 
-    pid_t childProcess = fork();
+    int childProcess = fork();
     if (childProcess < 0)
     {
         perror("Fork Process Failed");
