@@ -22,6 +22,16 @@ int main(int argc, char const *argv[])
     struct passwd *password;
     pid_t processId;
 
+    if (strcmp(argv[0], "child") == 0)
+    {
+        int duplicate = atoi(argv[1]);
+        valread = read(duplicate, buffer, 1024);
+        printf("Read %d bytes: %s\n", valread, buffer);
+        send(duplicate, hello, strlen(hello), 0);
+        printf("Hello message sent\n");
+        exit(0);
+    }
+
     // Creating socket file descriptor
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
     {
@@ -68,6 +78,11 @@ int main(int argc, char const *argv[])
     else if (childProcess == 0)
     {
         password = getpwnam(user);
+        int duplicateSocket = dup(new_socket);
+        if (duplicateSocket == -1)
+        {
+            perror("Failed to Duplicate");
+        }
         if (password == NULL)
         {
             perror("User nobody: not found");
@@ -79,15 +94,11 @@ int main(int argc, char const *argv[])
             perror("Previlege Separation Failed");
             exit(EXIT_FAILURE);
         }
-        valread = read(new_socket, buffer, 1024);
-        if (valread < 0)
-        {
-            perror("Read Failed");
-            exit(EXIT_FAILURE);
-        }
-        printf("Read %d bytes: %s\n", valread, buffer);
-        send(new_socket, hello, strlen(hello), 0);
-        printf("Hello message sent\n");
+        setuid(processId);
+        char integerToString[10];
+        sprintf(integerToString, "%d", duplicateSocket);
+        char *args[] = {"child", integerToString, NULL};
+        execvp(argv[0], args);
     }
     wait(NULL);
 
