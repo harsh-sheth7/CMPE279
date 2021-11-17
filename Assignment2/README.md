@@ -1,4 +1,4 @@
-# CMPE 279: Assignment 1
+# CMPE 279: Assignment 2
 
 Solo Assignment:
 
