@@ -24,10 +24,10 @@ int main(int argc, char const *argv[])
 
     if (strcmp(argv[0], "child") == 0)
     {
-        int duplicate = atoi(argv[1]);
-        valread = read(duplicate, buffer, 1024);
+        int duplicate_socket = atoi(argv[1]);
+        valread = read(duplicate_socket, buffer, 1024);
         printf("Read %d bytes: %s\n", valread, buffer);
-        send(duplicate, hello, strlen(hello), 0);
+        send(duplicate_socket, hello, strlen(hello), 0);
         printf("Hello message sent\n");
         exit(0);
     }
